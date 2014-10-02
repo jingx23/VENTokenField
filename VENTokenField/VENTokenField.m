@@ -87,6 +87,7 @@ static const CGFloat VENTokenFieldDefaultMaxHeight          = 150.0;
     self.colorScheme = [UIColor blueColor];
     self.toLabelTextColor = [UIColor colorWithRed:112/255.0f green:124/255.0f blue:124/255.0f alpha:1.0f];
     self.inputTextFieldTextColor = [UIColor colorWithRed:38/255.0f green:39/255.0f blue:41/255.0f alpha:1.0f];
+    self.tokenSeparator = @",";
     
     // Accessing bare value to avoid kicking off a premature layout run.
     _toLabelText = NSLocalizedString(@"To:", nil);
@@ -257,7 +258,7 @@ static const CGFloat VENTokenFieldDefaultMaxHeight          = 150.0;
             [self didTapToken:weakToken];
         };
 
-        [token setTitleText:[NSString stringWithFormat:@"%@,", title]];
+        [token setTitleText:[NSString stringWithFormat:@"%@%@", title, self.tokenSeparator]];
         [self.tokens addObject:token];
 
         if (*currentX + token.width <= self.scrollView.contentSize.width) { // token fits in current line

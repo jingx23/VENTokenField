@@ -68,6 +68,7 @@
 @property (strong, nonatomic) UILabel *toLabel;
 
 @property (copy, nonatomic) NSString *placeholderText;
+@property (copy, nonatomic) NSString *tokenSeparator;
 
 - (void)setColorScheme:(UIColor *)color;
 
