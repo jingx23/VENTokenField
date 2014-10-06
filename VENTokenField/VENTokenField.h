@@ -69,8 +69,10 @@
 
 @property (copy, nonatomic) NSString *placeholderText;
 @property (copy, nonatomic) NSString *tokenSeparator;
+@property (assign, nonatomic) BOOL useAlwaysBubblesForTokens;
 
 - (void)setColorScheme:(UIColor *)color;
+- (void)setColorSchemeForBubbles:(UIColor *)color;
 
 @end
 

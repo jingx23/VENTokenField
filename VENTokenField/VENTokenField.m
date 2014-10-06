@@ -32,6 +32,7 @@ static const CGFloat VENTokenFieldDefaultToLabelPadding     = 5.0;
 static const CGFloat VENTokenFieldDefaultTokenPadding       = 2.0;
 static const CGFloat VENTokenFieldDefaultMinInputWidth      = 80.0;
 static const CGFloat VENTokenFieldDefaultMaxHeight          = 150.0;
+static const CGFloat VENTokenFieldDefaultBubblePadding      = 5.0;
 
 
 @interface VENTokenField () <VENBackspaceTextFieldDelegate>
@@ -44,6 +45,7 @@ static const CGFloat VENTokenFieldDefaultMaxHeight          = 150.0;
 @property (strong, nonatomic) VENBackspaceTextField *inputTextField;
 @property (strong, nonatomic) UIColor *colorScheme;
 @property (strong, nonatomic) UILabel *collapsedLabel;
+@property (strong, nonatomic) UIColor *colorSchemeForBubbles;
 
 @end
 
@@ -88,6 +90,8 @@ static const CGFloat VENTokenFieldDefaultMaxHeight          = 150.0;
     self.toLabelTextColor = [UIColor colorWithRed:112/255.0f green:124/255.0f blue:124/255.0f alpha:1.0f];
     self.inputTextFieldTextColor = [UIColor colorWithRed:38/255.0f green:39/255.0f blue:41/255.0f alpha:1.0f];
     self.tokenSeparator = @",";
+    self.useAlwaysBubblesForTokens = NO;
+    self.colorSchemeForBubbles = [UIColor colorWithRed:160/255.0f green:203/255.0f blue:252/255.0f alpha:1.0f];
     
     // Accessing bare value to avoid kicking off a premature layout run.
     _toLabelText = NSLocalizedString(@"To:", nil);
@@ -181,6 +185,14 @@ static const CGFloat VENTokenFieldDefaultMaxHeight          = 150.0;
     }
 }
 
+- (void)setColorSchemeForBubbles:(UIColor *)color
+{
+    _colorSchemeForBubbles = color;
+    for (VENToken *token in self.tokens) {
+        [token setColorSchemeForBubbles:color];
+    }
+}
+
 - (NSString *)inputText
 {
     return self.inputTextField.text;
@@ -252,6 +264,8 @@ static const CGFloat VENTokenFieldDefaultMaxHeight          = 150.0;
         NSString *title = [self titleForTokenAtIndex:i];
         VENToken *token = [[VENToken alloc] init];
         token.colorScheme = self.colorScheme;
+        token.useAlwaysBubblesForTokens = self.useAlwaysBubblesForTokens;
+        token.colorSchemeForBubbles = self.colorSchemeForBubbles;
 
         __weak VENToken *weakToken = token;
         token.didTapTokenBlock = ^{
@@ -272,7 +286,7 @@ static const CGFloat VENTokenFieldDefaultMaxHeight          = 150.0;
             }
             token.frame = CGRectMake(*currentX, *currentY, tokenWidth, token.height);
         }
-        *currentX += token.width + self.tokenPadding;
+        *currentX += token.width + self.tokenPadding + (self.useAlwaysBubblesForTokens ? VENTokenFieldDefaultBubblePadding : 0.0);
         [self.scrollView addSubview:token];
     }
 }
