@@ -36,6 +36,7 @@
 - (NSString *)tokenField:(VENTokenField *)tokenField titleForTokenAtIndex:(NSUInteger)index;
 - (NSUInteger)numberOfTokensInTokenField:(VENTokenField *)tokenField;
 - (NSString *)tokenFieldCollapsedText:(VENTokenField *)tokenField;
+- (void)clearTokenFieldData:(VENTokenField *)tokenField;
 @end
 
 
@@ -70,6 +71,7 @@
 @property (copy, nonatomic) NSString *placeholderText;
 @property (copy, nonatomic) NSString *tokenSeparator;
 @property (assign, nonatomic) BOOL useAlwaysBubblesForTokens;
+@property (assign, nonatomic) BOOL showAsSearchField;
 
 - (void)setColorScheme:(UIColor *)color;
 - (void)setColorSchemeForBubbles:(UIColor *)color;

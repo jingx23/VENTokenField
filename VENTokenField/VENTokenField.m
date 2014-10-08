@@ -46,7 +46,7 @@ static const CGFloat VENTokenFieldDefaultBubblePadding      = 5.0;
 @property (strong, nonatomic) UIColor *colorScheme;
 @property (strong, nonatomic) UILabel *collapsedLabel;
 @property (strong, nonatomic) UIColor *colorSchemeForBubbles;
-
+@property (strong, nonatomic) UIView *magnifyingGlassView;
 @end
 
 
@@ -92,6 +92,7 @@ static const CGFloat VENTokenFieldDefaultBubblePadding      = 5.0;
     self.tokenSeparator = @",";
     self.useAlwaysBubblesForTokens = NO;
     self.colorSchemeForBubbles = [UIColor colorWithRed:160/255.0f green:203/255.0f blue:252/255.0f alpha:1.0f];
+    self.showAsSearchField = NO;
     
     // Accessing bare value to avoid kicking off a premature layout run.
     _toLabelText = NSLocalizedString(@"To:", nil);
@@ -113,7 +114,11 @@ static const CGFloat VENTokenFieldDefaultBubblePadding      = 5.0;
 
     CGFloat currentX = 0;
 
-    [self layoutToLabelInView:self origin:CGPointMake(self.horizontalInset, self.verticalInset) currentX:&currentX];
+    if(self.showAsSearchField){
+        [self layoutMagnifyingGlassInView:self origin:CGPointMake(self.horizontalInset, self.verticalInset) currentX:&currentX];
+    }else{
+        [self layoutToLabelInView:self origin:CGPointMake(self.horizontalInset, self.verticalInset) currentX:&currentX];
+    }
     [self layoutCollapsedLabelWithCurrentX:&currentX];
 
     self.tapGestureRecognizer = [[UITapGestureRecognizer alloc] initWithTarget:self
@@ -135,7 +140,11 @@ static const CGFloat VENTokenFieldDefaultBubblePadding      = 5.0;
     CGFloat currentX = 0;
     CGFloat currentY = 0;
 
-    [self layoutToLabelInView:self.scrollView origin:CGPointZero currentX:&currentX];
+    if(self.showAsSearchField){
+        [self layoutMagnifyingGlassInView:self.scrollView origin:CGPointZero currentX:&currentX];
+    }else{
+        [self layoutToLabelInView:self.scrollView origin:CGPointZero currentX:&currentX];
+    }
     [self layoutTokensWithCurrentX:&currentX currentY:&currentY];
     [self layoutInputTextFieldWithCurrentX:&currentX currentY:&currentY];
 
@@ -226,6 +235,17 @@ static const CGFloat VENTokenFieldDefaultBubblePadding      = 5.0;
     inputTextField.text = @"";
     inputTextField.frame = CGRectMake(*currentX, *currentY + 1, inputTextFieldWidth, [self heightForToken] - 1);
     inputTextField.tintColor = self.colorScheme;
+    if(self.showAsSearchField && inputTextField.rightView == nil){
+        UIImage *clearButtonImage = [UIImage imageNamed:@"clearButton"];
+        UIButton *clearButton = [UIButton buttonWithType:UIButtonTypeCustom];
+        [clearButton setImage:clearButtonImage forState:UIControlStateNormal];
+        [clearButton setFrame:CGRectMake(0, 0, clearButtonImage.size.width, clearButtonImage.size.width)];
+        [clearButton addTarget:self action:@selector(clearTextField:) forControlEvents:UIControlEventTouchUpInside];
+        UIView *paddingView = [[UIView alloc] initWithFrame:CGRectMake(0, 0, clearButtonImage.size.width + 1, clearButtonImage.size.height)];
+        [paddingView addSubview:clearButton];
+        _inputTextField.rightViewMode = UITextFieldViewModeWhileEditing;
+        [_inputTextField setRightView:paddingView];
+    }
     [self.scrollView addSubview:inputTextField];
 }
 
@@ -256,6 +276,25 @@ static const CGFloat VENTokenFieldDefaultBubblePadding      = 5.0;
     
     [view addSubview:self.toLabel];
     *currentX += self.toLabel.hidden ? CGRectGetMinX(self.toLabel.frame) : CGRectGetMaxX(self.toLabel.frame) + VENTokenFieldDefaultToLabelPadding;
+}
+
+- (void)layoutMagnifyingGlassInView:(UIView *)view origin:(CGPoint)origin currentX:(CGFloat *)currentX
+{
+    [self.magnifyingGlassView removeFromSuperview];
+    self.magnifyingGlassView = [self magnifyingGlassView];
+
+    CGRect newFrame = self.magnifyingGlassView.frame;
+    newFrame.origin = origin;
+
+    [self.magnifyingGlassView sizeToFit];
+    newFrame.size.width = CGRectGetWidth(self.magnifyingGlassView.frame);
+    //newFrame.origin.y = (CGRectGetHeight(self.inputTextField.frame) / 2) - (CGRectGetHeight(newFrame) / 2) + ((CGRectGetHeight(self.inputTextField.rightView.frame) - CGRectGetHeight(newFrame)) / 2);
+    newFrame.origin.y = (CGRectGetHeight(self.inputTextField.frame) / 2) - (CGRectGetHeight(newFrame) / 2);
+
+    self.magnifyingGlassView.frame = newFrame;
+
+    [view addSubview:self.magnifyingGlassView];
+    *currentX += self.magnifyingGlassView.hidden ? CGRectGetMinX(self.magnifyingGlassView.frame) : CGRectGetMaxX(self.magnifyingGlassView.frame) + VENTokenFieldDefaultToLabelPadding;
 }
 
 - (void)layoutTokensWithCurrentX:(CGFloat *)currentX currentY:(CGFloat *)currentY
@@ -334,6 +373,15 @@ static const CGFloat VENTokenFieldDefaultBubblePadding      = 5.0;
     return _toLabel;
 }
 
+- (UIView *)magnifyingGlassView {
+    if(!_magnifyingGlassView){
+        UIImage *magnifyingGlassImage = [UIImage imageNamed:@"magnifying_glass"];
+        _magnifyingGlassView = [[UIView alloc] initWithFrame:CGRectMake(0, 0, magnifyingGlassImage.size.width, magnifyingGlassImage.size.height)];
+        [_magnifyingGlassView setBackgroundColor:[UIColor colorWithPatternImage:magnifyingGlassImage]];
+    }
+    return _magnifyingGlassView;
+}
+
 - (void)adjustHeightForCurrentY:(CGFloat)currentY
 {
     if (currentY + [self heightForToken] > CGRectGetHeight(self.frame)) { // needs to grow
@@ -366,6 +414,12 @@ static const CGFloat VENTokenFieldDefaultBubblePadding      = 5.0;
         [_inputTextField addTarget:self action:@selector(inputTextFieldDidChange:) forControlEvents:UIControlEventEditingChanged];
     }
     return _inputTextField;
+}
+
+- (void) clearTextField:(id)sender
+{
+    self.inputTextField.text = @"";
+    [self clearTokenFieldData:self];
 }
 
 - (void)setInputTextFieldKeyboardType:(UIKeyboardType)inputTextFieldKeyboardType
@@ -458,6 +512,13 @@ static const CGFloat VENTokenFieldDefaultBubblePadding      = 5.0;
         return [self.dataSource tokenFieldCollapsedText:self];
     }
     return @"";
+}
+
+- (void)clearTokenFieldData:(VENTokenField *)tokenField
+{
+    if ([self.dataSource respondsToSelector:@selector(clearTokenFieldData:)]) {
+        [self.dataSource clearTokenFieldData:self];
+    }
 }
 
 
