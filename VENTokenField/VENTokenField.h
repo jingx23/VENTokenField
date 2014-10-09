@@ -56,8 +56,6 @@
  */
 
 @property (assign, nonatomic) CGFloat maxHeight;
-@property (assign, nonatomic) CGFloat verticalInset;
-@property (assign, nonatomic) CGFloat horizontalInset;
 @property (assign, nonatomic) CGFloat tokenPadding;
 @property (assign, nonatomic) CGFloat minInputWidth;
 
@@ -75,6 +73,7 @@
 
 - (void)setColorScheme:(UIColor *)color;
 - (void)setColorSchemeForBubbles:(UIColor *)color;
-
+- (void)setHorizontalInset:(CGFloat)horizontalInset;
+- (void)setVerticalInset:(CGFloat)verticalInset;
 @end
 

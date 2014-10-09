@@ -39,6 +39,8 @@ static const CGFloat VENTokenFieldDefaultBubblePadding      = 5.0;
 
 @property (strong, nonatomic) UIScrollView *scrollView;
 @property (strong, nonatomic) NSMutableArray *tokens;
+@property (assign, nonatomic) CGFloat verticalInset;
+@property (assign, nonatomic) CGFloat horizontalInset;
 @property (assign, nonatomic) CGFloat originalHeight;
 @property (strong, nonatomic) UITapGestureRecognizer *tapGestureRecognizer;
 @property (strong, nonatomic) VENBackspaceTextField *invisibleTextField;
@@ -212,15 +214,33 @@ static const CGFloat VENTokenFieldDefaultBubblePadding      = 5.0;
 - (void)layoutScrollView
 {
     self.scrollView = [[UIScrollView alloc] initWithFrame:CGRectMake(0, 0, CGRectGetWidth(self.frame), CGRectGetHeight(self.frame))];
-    self.scrollView.contentSize = CGSizeMake(CGRectGetWidth(self.frame) - self.horizontalInset * 2, CGRectGetHeight(self.frame) - self.verticalInset * 2);
-    self.scrollView.contentInset = UIEdgeInsetsMake(self.verticalInset,
-                                                    self.horizontalInset,
-                                                    self.verticalInset,
-                                                    self.horizontalInset);
+    [self updateScrollViewSize];
     self.scrollView.autoresizingMask = UIViewAutoresizingFlexibleHeight | UIViewAutoresizingFlexibleWidth;
 
     [self addSubview:self.scrollView];
 }
+
+- (void)updateScrollViewSize
+{
+    self.scrollView.contentSize = CGSizeMake(CGRectGetWidth(self.frame) - self.horizontalInset * 2, CGRectGetHeight(self.frame) - self.verticalInset * 2);
+    self.scrollView.contentInset = UIEdgeInsetsMake(self.verticalInset,
+            self.horizontalInset,
+            self.verticalInset,
+            self.horizontalInset);
+}
+
+- (void)setHorizontalInset:(CGFloat)horizontalInset
+{
+    _horizontalInset = horizontalInset;
+    [self updateScrollViewSize];
+}
+
+- (void)setVerticalInset:(CGFloat)verticalInset;
+{
+    _verticalInset = verticalInset;
+    [self updateScrollViewSize];
+}
+
 
 - (void)layoutInputTextFieldWithCurrentX:(CGFloat *)currentX currentY:(CGFloat *)currentY
 {
